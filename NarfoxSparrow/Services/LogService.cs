@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NarfoxSparrow.Logging
+namespace NarfoxSparrow.Services
 {
     public enum LogLevel
     {
@@ -54,7 +54,7 @@ namespace NarfoxSparrow.Logging
         }
     }
 
-    public class Log
+    public class LogService
     {
         private static ILogger log;
 
@@ -74,5 +74,7 @@ namespace NarfoxSparrow.Logging
                 log = value;
             }
         }
+
+        private LogService() { }
     }
 }

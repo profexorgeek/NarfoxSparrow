@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using NarfoxSparrow.Services;
 
 namespace NarfoxSparrow.Models
 {
@@ -19,6 +17,6 @@ namespace NarfoxSparrow.Models
         /// <summary>
         /// The log level to run the application at.
         /// </summary>
-        public Logging.LogLevel LogLevel { get; set; } = Logging.LogLevel.Debug; 
+        public LogLevel LogLevel { get; set; } = LogLevel.Debug; 
     }
 }

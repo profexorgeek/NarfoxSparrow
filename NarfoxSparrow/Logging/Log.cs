@@ -27,22 +27,30 @@ namespace NarfoxSparrow.Logging
 
         public void Debug(string msg)
         {
-            // swallow
-        }
-
-        public void Error(string msg)
-        {
-            // swallow
+            Write(LogLevel.Debug, msg);
         }
 
         public void Info(string msg)
         {
-            // swallow
+            Write(LogLevel.Info, msg);
         }
 
         public void Warn(string msg)
         {
-            // swallow
+            Write(LogLevel.Warn, msg);
+        }
+
+        public void Error(string msg)
+        {
+            Write(LogLevel.Error, msg);
+        }
+
+        void Write(LogLevel level, string msg)
+        {
+            if (Level <= level)
+            {
+                Console.WriteLine($"{level} - {msg}");
+            }
         }
     }
 
@@ -57,6 +65,7 @@ namespace NarfoxSparrow.Logging
                 if (log == null)
                 {
                     log = new ConsoleLogger();
+                    log.Level = LogLevel.Debug;
                 }
                 return log;
             }

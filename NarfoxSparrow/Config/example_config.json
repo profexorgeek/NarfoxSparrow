@@ -1,0 +1,6 @@
+{
+  "ApiKey": "YOUR_TWITTER_API_KEY_HERE",
+  "ApiSecret": "YOUR_SECRET_KEY_HERE",
+  "LogLevel": "Debug",
+  "ContentPath": "C:\\some\\folder\\with\\images\\"
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "FilePath": "Subfolder/image1.png",
+    "Caption": "This is an example image and this text will appear in a tweet containing the image!",
+    "AltText": "Example image showing X, Y, and Z",
+    "ProjectId": "ExampleProj"
+  },
+  {
+    "FilePath": "Subfolder/image2.png",
+    "Caption": "This is a test image and this text will appear the tweet!",
+    "AltText": "Example image showing X, Y, and Z",
+    "ProjectId": "ExampleProj"
+  }
+]

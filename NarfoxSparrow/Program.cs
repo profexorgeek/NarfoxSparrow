@@ -7,8 +7,7 @@ namespace NarfoxSparrow
 {
     class Program
     {
-        const string ConfigPath = "config.json";
-        const string AuthFile = "auth.json";
+        const string ConfigPath = "Config/config.json";
 
         static Config config;
 

@@ -41,5 +41,14 @@ namespace NarfoxSparrow.Models
         /// between tweets.
         /// </summary>
         public float MaximumHoursBetweenTweets { get; set; }
+
+        /// <summary>
+        /// How many hashtags each tweet should have. The app
+        /// should randomly select from available hashtags and
+        /// ensure that it doesn't use the same one multiple times
+        /// in a single tweet. The number of hashtags available
+        /// should be larger than this number!
+        /// </summary>
+        public int HashtagsPerTweet { get; set; }
     }
 }

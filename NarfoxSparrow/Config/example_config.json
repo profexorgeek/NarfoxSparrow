@@ -4,5 +4,6 @@
   "LogLevel": "Debug",
   "ContentPath": "C:\\some\\folder\\with\\images\\",
   "MinimumHoursBetweenTweets": 6,
-  "MaximumHoursBetweenTweets":  10
+  "MaximumHoursBetweenTweets": 10,
+  "HashtagsPerTweet": 3
 }

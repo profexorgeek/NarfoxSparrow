@@ -49,7 +49,8 @@ namespace NarfoxSparrow.Services
         {
             if (Level <= level)
             {
-                Console.WriteLine($"{level} - {msg}");
+                var timestamp = DateTime.Now.ToString("MM/dd/yyyy hh:mm tt");
+                Console.WriteLine($"{level} ({timestamp}): {msg}");
             }
         }
     }

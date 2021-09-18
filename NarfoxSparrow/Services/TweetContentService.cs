@@ -1,6 +1,8 @@
 ﻿using NarfoxSparrow.Models;
+using NarfoxSparrow.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace NarfoxSparrow.Services
@@ -9,7 +11,6 @@ namespace NarfoxSparrow.Services
     {
         public const string ProjectsPath = "Config/projects.json";
         public const string ImagesPath = "Config/images.json";
-        Random rand;
 
         static TweetContentService instance;
 
@@ -25,10 +26,7 @@ namespace NarfoxSparrow.Services
             }
         }
 
-        private TweetContentService()
-        {
-            rand = new Random();
-        }
+        private TweetContentService() { }
 
         /// <summary>
         /// Gets random content based on the json data
@@ -47,14 +45,24 @@ namespace NarfoxSparrow.Services
             var images = FileService.Instance.LoadFile<List<ProjectImage>>(ImagesPath);
             var weightedList = CreatedWeightedList(projects);
 
-            // choose a random project
-            var i = rand.Next(0, weightedList.Count);
-            var chosenProjectId = weightedList[i];
+            var chosenProjectId = weightedList.Random();
+            var chosenImage = images.Where(i => i.ProjectId == chosenProjectId).Random();
 
+            tweetContent.ImagePath = chosenImage.FilePath;
+            tweetContent.TweetText = chosenImage.Caption;
+            tweetContent.ImageAltText = chosenImage.AltText;
 
             return tweetContent;
         }
 
+        /// <summary>
+        /// Populates a List with a number of projectIds based
+        /// on the project weight. This allows randomly selecting
+        /// from the list and getting a weighted random value
+        /// </summary>
+        /// <param name="projects">A list of projects</param>
+        /// <returns>A list of project Ids where a project Id is 
+        /// repeated based on the project weight</returns>
         public List<string> CreatedWeightedList(List<Project> projects)
         {
             List<string> weightedList = new List<string>();

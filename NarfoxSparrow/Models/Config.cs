@@ -2,6 +2,11 @@
 
 namespace NarfoxSparrow.Models
 {
+    /// <summary>
+    /// This data model represents the application configuration
+    /// and is intended to be populated from JSON during
+    /// application startup
+    /// </summary>
     public class Config
     {
         /// <summary>
@@ -24,5 +29,17 @@ namespace NarfoxSparrow.Models
         /// to image file paths supplied in JSON data
         /// </summary>
         public string ContentPath { get; set; }
+
+        /// <summary>
+        /// The minimum number of hours the app will wait
+        /// between tweets.
+        /// </summary>
+        public float MinimumHoursBetweenTweets { get; set; }
+
+        /// <summary>
+        /// The maximum number of hours the app will wait
+        /// between tweets.
+        /// </summary>
+        public float MaximumHoursBetweenTweets { get; set; }
     }
 }

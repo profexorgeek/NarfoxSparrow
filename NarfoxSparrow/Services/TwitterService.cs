@@ -12,6 +12,11 @@ using Tweetinvi.Parameters;
 
 namespace NarfoxSparrow.Services
 {
+    /// <summary>
+    /// This service authenticates users and posts tweets
+    /// to their account. It can post text or image tweets.
+    /// Video is not currently supported.
+    /// </summary>
     public class TwitterService
     {
         const string AuthSavePath = "auth.json";
@@ -23,7 +28,6 @@ namespace NarfoxSparrow.Services
         string apiSecret;
         TwitterClient userClient;
         IAuthenticatedUser user;
-
 
         public static TwitterService Instance
         {
@@ -39,6 +43,14 @@ namespace NarfoxSparrow.Services
 
         private TwitterService() { }
 
+        /// <summary>
+        /// Initializes the service with a client api key
+        /// and secret, which should be provided by application
+        /// configuration. This method must be called before any
+        /// other methods are called or an error will be thrown.
+        /// </summary>
+        /// <param name="apiKey">An API Key issued by Twitter</param>
+        /// <param name="apiSecret">An API Secret issued by Twitter</param>
         public void Initialize(string apiKey, string apiSecret)
         {
             this.apiKey = apiKey;

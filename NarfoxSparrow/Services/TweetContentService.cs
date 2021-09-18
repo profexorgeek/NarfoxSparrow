@@ -11,6 +11,8 @@ namespace NarfoxSparrow.Services
     {
         public const string ProjectsPath = "Config/projects.json";
         public const string ImagesPath = "Config/images.json";
+        public const int MaxLoopIterations = 10;
+        public const int MaxTweetChars = 280;
 
         static TweetContentService instance;
 
@@ -37,19 +39,44 @@ namespace NarfoxSparrow.Services
         /// data to compose a tweet.
         /// </summary>
         /// <returns>A TweetContentModel ready for tweeting</returns>
-        public TweetContentModel GetRandomTweet()
+        public TweetContentModel GetRandomTweet(int numberOfHashtags = 3)
         {
+            // load content: we do this every time to make sure data is fresh!
             var tweetContent = new TweetContentModel();
-
+            var sb = new StringBuilder();
             var projects = FileService.Instance.LoadFile<List<Project>>(ProjectsPath);
             var images = FileService.Instance.LoadFile<List<ProjectImage>>(ImagesPath);
             var weightedList = CreatedWeightedList(projects);
-
             var chosenProjectId = weightedList.Random();
+            var chosenProject = projects.Where(p => p.Id == chosenProjectId).FirstOrDefault();
             var chosenImage = images.Where(i => i.ProjectId == chosenProjectId).Random();
 
+            // set main tweet content
+            sb.AppendLine(chosenImage.Caption);
+
+            // get N random hashtags
+            int tries = 0;
+            var hashtags = new List<string>();
+            while (hashtags.Count < numberOfHashtags && tries < MaxLoopIterations)
+            {
+                var newTag = chosenProject.Hashtags.Random();
+                if(!hashtags.Contains(newTag))
+                {
+                    hashtags.Add(newTag);
+                }
+                tries++;
+            }
+            var hashtagLine = string.Join(" ", hashtags);
+
+            // append hashtags if we have enough characters
+            if (sb.Length + hashtagLine.Length < MaxTweetChars)
+            {
+                sb.AppendLine(hashtagLine);
+            }
+
+            // build the tweet
             tweetContent.ImagePath = chosenImage.FilePath;
-            tweetContent.TweetText = chosenImage.Caption;
+            tweetContent.TweetText = sb.ToString();
             tweetContent.ImageAltText = chosenImage.AltText;
 
             return tweetContent;

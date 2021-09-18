@@ -1,7 +1,11 @@
 ﻿using NarfoxSparrow.Models;
 using NarfoxSparrow.Services;
+using NarfoxSparrow.Utilities;
 using System;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using Tweetinvi.Models;
 
 namespace NarfoxSparrow
 {
@@ -17,10 +21,49 @@ namespace NarfoxSparrow
 
             await TwitterService.Instance.TryAuthenticateUserAsync();
 
-            await TwitterService.Instance.TryImageTweet(
-                "Gif tweet test",
-                "./Content/wee-forest-fireflies.gif",
-                "Fireflies in the forest");
+            bool tweetNow = false;
+            try
+            {
+                tweetNow = Convert.ToBoolean(InputService.Instance.GetUserInput("Tweet immediately (true or false)?"));
+            }
+            catch (Exception e)
+            {
+                LogService.Instance.Warn("Bad input received, resorting to default: no immediate tweet.");
+            }
+
+            if (tweetNow)
+            {
+                await PostRandomTweet();
+            }
+
+            Random rand = new Random();
+            while (true)
+            {
+                var millisecondsToSleep = GetRandomSleepMilliseconds();
+                var nextTweetTime = DateTime.Now.AddMilliseconds(millisecondsToSleep);
+                LogService.Instance.Info($"Next tweet will be: {nextTweetTime.ToString()}");
+                await Task.Delay(millisecondsToSleep);
+                await PostRandomTweet();
+            }
+        }
+
+        static int GetRandomSleepMilliseconds()
+        {
+            float hoursToNextTweet = Extensions.RNG.InRange(config.MinimumHoursBetweenTweets, config.MaximumHoursBetweenTweets);
+
+            // hours * 60min * 60sec * 1000milli
+            float milliseconds = hoursToNextTweet * 60 * 60 * 1000;
+            int milliRounded = (int)Math.Floor(milliseconds);
+            return milliRounded;
+        }
+
+        static async Task<ITweet> PostRandomTweet()
+        {
+            var tweetContent = TweetContentService.Instance.GetRandomTweet(config.HashtagsPerTweet);
+            var imgPath = Path.Combine(config.ContentPath, tweetContent.ImagePath);
+            var tweet = await TwitterService.Instance.TryImageTweet(tweetContent.TweetText, imgPath, tweetContent.ImageAltText);
+
+            return tweet;
         }
 
         static void Initialize()

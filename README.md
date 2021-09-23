@@ -26,6 +26,7 @@ This is what the application does:
 1. Once authenticated, credentials will be saved for the future. Delete the `auth.json` file to force new auth.
 1. The application will give the user a chance to tweet immediately
 1. The application will tweet images and text continually at random intervals based on the config settings
+1. The application keeps a history and checks tweets against the history to try to avoid duplicate content in too short a time frame
 
 **Note:** that the application does _not_ currently guard against duplicate posts. When I built this I had roughly 150
 gamedev images in a folder. I figured if the bot tweets 3x per day it would be roughly 50 days between duplicate 
@@ -42,6 +43,7 @@ in `Config/config.json`. This file is **loaded once** when the application launc
 - ApiSecret: your API secret, issued by [Twitter](https://developer.twitter.com)
 - LogLevel: the logging verbosity, defaults to `Debug`
 - ContentPath: the root path for your content, this will be prepended to image filenames
+- MinimumTweetsBeforeRepeat: the history length, the app will try to avoid tweeting duplicate content more frequently than this number
 - MinimumHoursBetweenTweets: the minimum hours between tweets, can be a decimal
 - MaximumHoursBetweenTweets: the maximum hours between tweets, can be a decimal
 - HashtagsPerTweet: the number of hashtags that are randomly appended to each tweet. This number should be smaller than the number of hashtags specified in your project config!

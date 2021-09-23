@@ -31,6 +31,15 @@ namespace NarfoxSparrow.Models
         public string ContentPath { get; set; }
 
         /// <summary>
+        /// How many unique tweets must occur before a tweet with duplicate content
+        /// can be posted. This is essentially the length of the history log.
+        /// 
+        /// If this number is close or higher than the total images to choose from,
+        /// duplicates will still happen.
+        /// </summary>
+        public int MinimumTweetsBeforeRepeat { get; set; }
+
+        /// <summary>
         /// The minimum number of hours the app will wait
         /// between tweets.
         /// </summary>

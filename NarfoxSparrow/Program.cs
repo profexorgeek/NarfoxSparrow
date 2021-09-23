@@ -14,8 +14,11 @@ namespace NarfoxSparrow
     class Program
     {
         const string ConfigPath = "Config/config.json";
+        const string HistoryPath = "history.json";
+        const int MaxUniquenessIterations = 10;
 
         static Config config;
+        static List<TweetContentModel> history;
 
         static async Task Main(string[] args)
         {
@@ -33,8 +36,6 @@ namespace NarfoxSparrow
                 LogService.Instance.Warn("Bad input received, resorting to default: no immediate tweet.");
             }
 
-            // TestForDuplicates();
-
             if (tweetNow)
             {
                 await PostRandomTweet();
@@ -51,45 +52,6 @@ namespace NarfoxSparrow
             }
         }
 
-        /// <summary>
-        /// Brute force test randomization to make sure selection of
-        /// tweet content is randomly distributed
-        /// </summary>
-        /// <param name="numberOfTweets">The number of tweet contents to randomly generate</param>
-        static void TestForDuplicates(int numberOfTweets = 1000)
-        {
-            // get a ton of tweets
-            List<TweetContentModel> tweetContent = new List<TweetContentModel>();
-            for(var i = 0; i < numberOfTweets; i++)
-            {
-                tweetContent.Add(TweetContentService.Instance.GetRandomTweet());
-            }
-
-            // count duplicates
-            var dupeCounts = new Dictionary<string, int>();
-            var totalDupes = 0;
-            for(var i = tweetContent.Count - 1; i > -1; i--)
-            {
-                var t1 = tweetContent[i];
-
-                if(dupeCounts.ContainsKey(t1.ImagePath))
-                {
-                    continue;
-                }
-                else
-                {
-                    var count = tweetContent.Count(t => t.ImagePath == t1.ImagePath);
-                    dupeCounts.Add(t1.ImagePath, count);
-                }
-            }
-
-            LogService.Instance.Info("\tPath\t\t\tCount");
-            foreach(var kvp in dupeCounts)
-            {
-                LogService.Instance.Info($"\t{kvp.Key}\t\t\t{kvp.Value}");
-            }
-        }
-
         static int GetRandomSleepMilliseconds()
         {
             float hoursToNextTweet = Extensions.RNG.InRange(config.MinimumHoursBetweenTweets, config.MaximumHoursBetweenTweets);
@@ -102,9 +64,27 @@ namespace NarfoxSparrow
 
         static async Task<ITweet> PostRandomTweet()
         {
+            // try to get tweet content whose image hasn't been tweeted in awhile
             var tweetContent = TweetContentService.Instance.GetRandomTweet(config.HashtagsPerTweet);
+            var iterations = 0;
+            while(iterations < MaxUniquenessIterations && history.Where(t => t.ImagePath == tweetContent.ImagePath).Any())
+            {
+                tweetContent = TweetContentService.Instance.GetRandomTweet(config.HashtagsPerTweet);
+                iterations++;
+            }
             var imgPath = Path.Combine(config.ContentPath, tweetContent.ImagePath);
             var tweet = await TwitterService.Instance.TryImageTweet(tweetContent.TweetText, imgPath, tweetContent.ImageAltText);
+
+            // if we successfully tweeted, add the tweet to the history and prune it to the target length
+            if(tweet != null)
+            {
+                history.Add(tweetContent);
+                if (history.Count > config.MinimumTweetsBeforeRepeat)
+                {
+                    history.RemoveAt(0);
+                }
+                FileService.Instance.SaveFile(history, HistoryPath);
+            }
 
             return tweet;
         }
@@ -122,6 +102,15 @@ namespace NarfoxSparrow
 
                 // rethrow because the app can't keep going
                 throw e;
+            }
+
+            if (File.Exists(HistoryPath))
+            {
+                history = FileService.Instance.LoadFile<List<TweetContentModel>>(HistoryPath);
+            }
+            else
+            {
+                history = new List<TweetContentModel>();
             }
 
             LogService.Instance.Level = config.LogLevel;

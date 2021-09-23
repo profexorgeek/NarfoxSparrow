@@ -49,7 +49,9 @@ namespace NarfoxSparrow.Services
             var weightedList = CreatedWeightedList(projects);
             var chosenProjectId = weightedList.Random();
             var chosenProject = projects.Where(p => p.Id == chosenProjectId).FirstOrDefault();
-            var chosenImage = images.Where(i => i.ProjectId == chosenProjectId).Random();
+            var projectImages = images.Where(i => i.ProjectId == chosenProjectId);
+            var chosenImage = projectImages.Random();
+            var imageIndex = images.IndexOf(chosenImage);
 
             // set main tweet content
             sb.AppendLine(chosenImage.Caption);
@@ -78,6 +80,7 @@ namespace NarfoxSparrow.Services
             tweetContent.ImagePath = chosenImage.FilePath;
             tweetContent.TweetText = sb.ToString();
             tweetContent.ImageAltText = chosenImage.AltText;
+            tweetContent.TweetTime = DateTime.Now;
 
             return tweetContent;
         }

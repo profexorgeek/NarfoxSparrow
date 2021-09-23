@@ -11,6 +11,9 @@ namespace NarfoxSparrow.Models
         /// be appended to the root path defined
         /// in the config file to resolve the full
         /// image path.
+        /// 
+        /// This is expected to be unique and may be
+        /// used to avoid duplicate content tweets.
         /// </summary>
         public string FilePath { get; set; }
 

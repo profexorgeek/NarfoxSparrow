@@ -2,7 +2,9 @@
 using NarfoxSparrow.Services;
 using NarfoxSparrow.Utilities;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Tweetinvi.Models;
@@ -31,6 +33,8 @@ namespace NarfoxSparrow
                 LogService.Instance.Warn("Bad input received, resorting to default: no immediate tweet.");
             }
 
+            // TestForDuplicates();
+
             if (tweetNow)
             {
                 await PostRandomTweet();
@@ -44,6 +48,45 @@ namespace NarfoxSparrow
                 LogService.Instance.Info($"Next tweet will be: {nextTweetTime.ToString()}");
                 await Task.Delay(millisecondsToSleep);
                 await PostRandomTweet();
+            }
+        }
+
+        /// <summary>
+        /// Brute force test randomization to make sure selection of
+        /// tweet content is randomly distributed
+        /// </summary>
+        /// <param name="numberOfTweets">The number of tweet contents to randomly generate</param>
+        static void TestForDuplicates(int numberOfTweets = 1000)
+        {
+            // get a ton of tweets
+            List<TweetContentModel> tweetContent = new List<TweetContentModel>();
+            for(var i = 0; i < numberOfTweets; i++)
+            {
+                tweetContent.Add(TweetContentService.Instance.GetRandomTweet());
+            }
+
+            // count duplicates
+            var dupeCounts = new Dictionary<string, int>();
+            var totalDupes = 0;
+            for(var i = tweetContent.Count - 1; i > -1; i--)
+            {
+                var t1 = tweetContent[i];
+
+                if(dupeCounts.ContainsKey(t1.ImagePath))
+                {
+                    continue;
+                }
+                else
+                {
+                    var count = tweetContent.Count(t => t.ImagePath == t1.ImagePath);
+                    dupeCounts.Add(t1.ImagePath, count);
+                }
+            }
+
+            LogService.Instance.Info("\tPath\t\t\tCount");
+            foreach(var kvp in dupeCounts)
+            {
+                LogService.Instance.Info($"\t{kvp.Key}\t\t\t{kvp.Value}");
             }
         }
 

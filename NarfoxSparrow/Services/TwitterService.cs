@@ -204,7 +204,7 @@ namespace NarfoxSparrow.Services
             if (upload != null)
             {
                 // add alt text
-                if (string.IsNullOrEmpty(imageAlt))
+                if (string.IsNullOrEmpty(imageAlt) == false)
                 {
                     await userClient.Upload.AddMediaMetadataAsync(new MediaMetadata(upload)
                     {

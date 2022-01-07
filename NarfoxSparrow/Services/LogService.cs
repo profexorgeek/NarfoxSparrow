@@ -23,6 +23,8 @@ namespace NarfoxSparrow.Services
 
     public class ConsoleLogger : ILogger
     {
+        const string LogFilename = "log.txt";
+
         public LogLevel Level { get; set; } = LogLevel.Debug;
 
         public void Debug(string msg)
@@ -51,6 +53,7 @@ namespace NarfoxSparrow.Services
             {
                 var timestamp = DateTime.Now.ToString("MM/dd/yyyy hh:mm tt");
                 Console.WriteLine($"{level} ({timestamp}): {msg}");
+                FileService.Instance.AppendText(LogFilename, msg);
             }
         }
     }

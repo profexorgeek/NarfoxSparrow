@@ -37,7 +37,7 @@ namespace NarfoxSparrow.Services
             LogService.Instance.Info($"Saved file: {path}");
         }
 
-        string LoadText(string path)
+        public string LoadText(string path)
         {
             string text;
             try
@@ -53,7 +53,7 @@ namespace NarfoxSparrow.Services
             return text;
         }
 
-        bool SaveText(string path, string text)
+        public bool SaveText(string path, string text)
         {
             bool success = false;
             try
@@ -62,6 +62,24 @@ namespace NarfoxSparrow.Services
                 success = true;
             }
             catch (Exception e)
+            {
+                var msg = string.Format("Failed to save to {0}, error: {1}", path, e);
+                LogService.Instance.Error(msg);
+            }
+
+            return success;
+        }
+
+        public bool AppendText(string path, string text)
+        {
+            bool success = false;
+            try
+            {
+                text += "\n";
+                File.AppendAllText(path, text);
+                success = true;
+            }
+            catch(Exception e)
             {
                 var msg = string.Format("Failed to save to {0}, error: {1}", path, e);
                 LogService.Instance.Error(msg);

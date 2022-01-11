@@ -52,8 +52,9 @@ namespace NarfoxSparrow.Services
             if (Level <= level)
             {
                 var timestamp = DateTime.Now.ToString("MM/dd/yyyy hh:mm tt");
-                Console.WriteLine($"{level} ({timestamp}): {msg}");
-                FileService.Instance.AppendText(LogFilename, msg);
+                var logMsg = $"{level} ({timestamp}): {msg}";
+                Console.WriteLine(logMsg);
+                FileService.Instance.AppendText(LogFilename, logMsg);
             }
         }
     }

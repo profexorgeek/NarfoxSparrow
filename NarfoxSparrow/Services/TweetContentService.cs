@@ -16,6 +16,11 @@ namespace NarfoxSparrow.Services
 
         static TweetContentService instance;
 
+        List<Project> projects;
+        List<ProjectImage> images;
+        List<string> weightedList;
+        bool contentLoadedOnce = false;
+
         public static TweetContentService Instance
         {
             get
@@ -39,21 +44,19 @@ namespace NarfoxSparrow.Services
         /// data to compose a tweet.
         /// </summary>
         /// <returns>A TweetContentModel ready for tweeting</returns>
-        public TweetContentModel GetRandomTweet(int numberOfHashtags = 3)
+        public TweetContentModel GetRandomTweet(int numberOfHashtags = 3, bool suppressContentReload = false)
         {
-            // load content: we do this every time to make sure data is fresh!
-            var tweetContent = new TweetContentModel();
-            var sb = new StringBuilder();
-            var projects = FileService.Instance.LoadFile<List<Project>>(ProjectsPath);
-            var images = FileService.Instance.LoadFile<List<ProjectImage>>(ImagesPath);
-            var weightedList = CreatedWeightedList(projects);
+            if (contentLoadedOnce == false || suppressContentReload == false)
+            {
+                LoadContent();
+            }
             var chosenProjectId = weightedList.Random();
             var chosenProject = projects.Where(p => p.Id == chosenProjectId).FirstOrDefault();
             var projectImages = images.Where(i => i.ProjectId == chosenProjectId);
             var chosenImage = projectImages.Random();
             var imageIndex = images.IndexOf(chosenImage);
 
-            // set main tweet content
+            var sb = new StringBuilder();
             sb.AppendLine(chosenImage.Caption);
 
             // get N random hashtags
@@ -62,7 +65,7 @@ namespace NarfoxSparrow.Services
             while (hashtags.Count < numberOfHashtags && tries < MaxLoopIterations)
             {
                 var newTag = chosenProject.Hashtags.Random();
-                if(!hashtags.Contains(newTag))
+                if (!hashtags.Contains(newTag))
                 {
                     hashtags.Add(newTag);
                 }
@@ -77,25 +80,26 @@ namespace NarfoxSparrow.Services
             }
 
             // build the tweet
+            var tweetContent = new TweetContentModel();
             tweetContent.ImagePath = chosenImage.FilePath;
             tweetContent.TweetText = sb.ToString();
             tweetContent.ImageAltText = chosenImage.AltText;
             tweetContent.TweetTime = DateTime.Now;
 
+            LogService.Instance.Debug($"Got tweet content: {tweetContent.TweetText} with image {tweetContent.ImagePath}");
+
             return tweetContent;
         }
 
         /// <summary>
-        /// Populates a List with a number of projectIds based
-        /// on the project weight. This allows randomly selecting
-        /// from the list and getting a weighted random value
+        /// Loads or reloads projects and images and regenerates weighted list
         /// </summary>
-        /// <param name="projects">A list of projects</param>
-        /// <returns>A list of project Ids where a project Id is 
-        /// repeated based on the project weight</returns>
-        public List<string> CreatedWeightedList(List<Project> projects)
+        void LoadContent()
         {
-            List<string> weightedList = new List<string>();
+            projects = FileService.Instance.LoadFile<List<Project>>(ProjectsPath);
+            images = FileService.Instance.LoadFile<List<ProjectImage>>(ImagesPath);
+
+            weightedList = new List<string>();
             foreach (var proj in projects)
             {
                 for (var i = 0; i < proj.Weight; i++)
@@ -103,7 +107,8 @@ namespace NarfoxSparrow.Services
                     weightedList.Add(proj.Id);
                 }
             }
-            return weightedList;
+
+            contentLoadedOnce = true;
         }
     }
 }

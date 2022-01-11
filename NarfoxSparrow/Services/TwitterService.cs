@@ -29,6 +29,12 @@ namespace NarfoxSparrow.Services
         TwitterClient userClient;
         IAuthenticatedUser user;
 
+        /// <summary>
+        /// Whether this service actually pushes tweets to twitter.
+        /// Set this to "true" to prevent the final step where tweets are posted.
+        /// </summary>
+        public bool TestTweetOnly { get; set; } = false;
+
         public static TwitterService Instance
         {
             get
@@ -153,8 +159,13 @@ namespace NarfoxSparrow.Services
         public async Task<ITweet> TryTextTweet(string text)
         {
             CheckThrowInitAndAuthError();
-            var tweet = await userClient.Tweets.PublishTweetAsync(text);
-            LogService.Instance.Info($"Tweet published: {tweet}");
+            ITweet tweet = null;
+            if(TestTweetOnly == false)
+            {
+                tweet = await userClient.Tweets.PublishTweetAsync(text);
+                LogService.Instance.Info($"Tweet published: {tweet}");
+            }
+            
             return tweet;
         }
 
@@ -188,8 +199,12 @@ namespace NarfoxSparrow.Services
             }
 
             var data = File.ReadAllBytes(imagePath);
-            LogService.Instance.Info($"Uploading image from path: {imagePath}...");
-            var upload = await userClient.Upload.UploadTweetImageAsync(
+            LogService.Instance.Debug($"Uploading image from path: {imagePath}...");
+            IMedia upload = null;
+
+            if (TestTweetOnly == false)
+            {
+                upload = await userClient.Upload.UploadTweetImageAsync(
                 new UploadTweetImageParameters(data)
                 {
                     // 1mb chunk size
@@ -197,11 +212,14 @@ namespace NarfoxSparrow.Services
                     MediaCategory = mediaCategory,
                     WaitForTwitterProcessing = true,
                 });
+                LogService.Instance.Debug($"Image upload complete.");
+            }
+            
             ITweet tweet = null;
 
-            LogService.Instance.Info($"Image upload complete.");
+            
 
-            if (upload != null)
+            if (upload != null && TestTweetOnly == false)
             {
                 // add alt text
                 if (string.IsNullOrEmpty(imageAlt) == false)
@@ -218,9 +236,12 @@ namespace NarfoxSparrow.Services
                         MediaIds = { upload.Id.Value }
 
                     });
+            }
+
+            if(tweet != null)
+            {
                 LogService.Instance.Info($"Image tweet published: {tweet}");
             }
-            
             
             return tweet;
         }

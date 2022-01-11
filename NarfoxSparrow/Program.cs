@@ -36,10 +36,14 @@ namespace NarfoxSparrow
                 LogService.Instance.Warn("Bad input received, resorting to default: no immediate tweet.");
             }
 
+            // set this to true to test stuff without actually tweeting
+            //TwitterService.Instance.TestTweetOnly = true;
+
             if (tweetNow)
             {
                 await PostRandomTweet();
             }
+
 
             Random rand = new Random();
             while (true)
@@ -67,26 +71,36 @@ namespace NarfoxSparrow
             // try to get tweet content whose image hasn't been tweeted in awhile
             var tweetContent = TweetContentService.Instance.GetRandomTweet(config.HashtagsPerTweet);
             var iterations = 0;
-            while(iterations < MaxUniquenessIterations && history.Where(t => t.ImagePath == tweetContent.ImagePath).Any())
-            {
-                tweetContent = TweetContentService.Instance.GetRandomTweet(config.HashtagsPerTweet);
-                iterations++;
-            }
-            var imgPath = Path.Combine(config.ContentPath, tweetContent.ImagePath);
-            var tweet = await TwitterService.Instance.TryImageTweet(tweetContent.TweetText, imgPath, tweetContent.ImageAltText);
 
-            // if we successfully tweeted, add the tweet to the history and prune it to the target length
-            if(tweet != null)
+            try
             {
-                history.Add(tweetContent);
-                if (history.Count > config.MinimumTweetsBeforeRepeat)
+                while (iterations < MaxUniquenessIterations && history.Where(t => t.ImagePath == tweetContent.ImagePath).Any())
                 {
-                    history.RemoveAt(0);
+                    // NOTE: within the while loop we suppress content reloads because we don't want to spam IO
+                    tweetContent = TweetContentService.Instance.GetRandomTweet(config.HashtagsPerTweet, true);
+                    iterations++;
                 }
-                FileService.Instance.SaveFile(history, HistoryPath);
-            }
+                var imgPath = Path.Combine(config.ContentPath, tweetContent.ImagePath);
+                var tweet = await TwitterService.Instance.TryImageTweet(tweetContent.TweetText, imgPath, tweetContent.ImageAltText);
 
-            return tweet;
+                // if we successfully tweeted, add the tweet to the history and prune it to the target length
+                if (tweet != null)
+                {
+                    history.Add(tweetContent);
+                    if (history.Count > config.MinimumTweetsBeforeRepeat)
+                    {
+                        history.RemoveAt(0);
+                    }
+                    FileService.Instance.SaveFile(history, HistoryPath);
+                }
+
+                return tweet;
+            }
+            catch(Exception ex)
+            {
+                LogService.Instance.Error($"Failed to post tweet: {ex.Message}\n{ex.StackTrace}\n{ex.InnerException}");
+                return null;
+            }
         }
 
         static void Initialize()

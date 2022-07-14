@@ -37,7 +37,8 @@ namespace NarfoxSparrow
             }
 
             // set this to true to test stuff without actually tweeting
-            //TwitterService.Instance.TestTweetOnly = true;
+            // TwitterService.Instance.TestTweetOnly = true;
+            LogService.Instance.Info($"In test only mode? {TwitterService.Instance.TestTweetOnly}");
 
             if (tweetNow)
             {

@@ -74,9 +74,17 @@ namespace NarfoxSparrow.Services
             var hashtagLine = string.Join(" ", hashtags);
 
             // append hashtags if we have enough characters
-            if (sb.Length + hashtagLine.Length < MaxTweetChars)
+            if (sb.Length + hashtagLine.Length + 1 < MaxTweetChars)
             {
+                sb.AppendLine();
                 sb.AppendLine(hashtagLine);
+            }
+
+            // append a link if we have one and have enough character
+            if(sb.Length + chosenProject.StoreLink.Length + 1 < MaxTweetChars)
+            {
+                sb.AppendLine("");
+                sb.AppendLine(chosenProject.StoreLink);
             }
 
             // build the tweet
